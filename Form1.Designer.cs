@@ -1,6 +1,6 @@
 ﻿namespace domotica
 {
-    partial class Domotica
+    partial class Form1
     {
         /// <summary>
         ///  Required designer variable.
@@ -61,6 +61,7 @@
             btnCloseDoor.TabIndex = 1;
             btnCloseDoor.Text = "cerrar puerta";
             btnCloseDoor.UseVisualStyleBackColor = true;
+            btnCloseDoor.Click += btnCloseDoor_Click;
             // 
             // btnCloseWindow
             // 
@@ -70,6 +71,7 @@
             btnCloseWindow.TabIndex = 3;
             btnCloseWindow.Text = "cerrar ventana";
             btnCloseWindow.UseVisualStyleBackColor = true;
+            btnCloseWindow.Click += btnCloseWindow_Click;
             // 
             // btnOpenWindow
             // 
@@ -79,6 +81,7 @@
             btnOpenWindow.TabIndex = 2;
             btnOpenWindow.Text = "abrir ventana";
             btnOpenWindow.UseVisualStyleBackColor = true;
+            btnOpenWindow.Click += btnOpenWindow_Click;
             // 
             // btnModalTemp
             // 
@@ -99,7 +102,7 @@
             groupBox1.Size = new Size(311, 125);
             groupBox1.TabIndex = 5;
             groupBox1.TabStop = false;
-            groupBox1.Text = "control de puerta";
+            groupBox1.Text = "Control de puerta";
             // 
             // groupBox2
             // 
@@ -110,7 +113,7 @@
             groupBox2.Size = new Size(328, 125);
             groupBox2.TabIndex = 6;
             groupBox2.TabStop = false;
-            groupBox2.Text = "groupBox2";
+            groupBox2.Text = "Control de ventana";
             // 
             // groupBox3
             // 
@@ -120,7 +123,7 @@
             groupBox3.Size = new Size(250, 125);
             groupBox3.TabIndex = 7;
             groupBox3.TabStop = false;
-            groupBox3.Text = "groupBox3";
+            groupBox3.Text = "Alarma";
             // 
             // btnOpenAlarmModal
             // 
@@ -132,7 +135,7 @@
             btnOpenAlarmModal.UseVisualStyleBackColor = true;
             btnOpenAlarmModal.Click += button1_Click_2;
             // 
-            // Domotica
+            // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -141,9 +144,10 @@
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
             Controls.Add(btnModalTemp);
-            Name = "Domotica";
+            Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Form1";
+            Load += Form1_Load;
             groupBox1.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
             groupBox3.ResumeLayout(false);

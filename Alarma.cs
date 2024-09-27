@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,9 +13,11 @@ namespace domotica
 {
     public partial class Alarma : Form
     {
-        public Alarma()
+        System.IO.Ports.SerialPort Arduino;
+        public Alarma(SerialPort arduino)
         {
             InitializeComponent();
+            Arduino = arduino;
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -29,9 +32,10 @@ namespace domotica
 
         private void btnAcceptAlarmaModal_Click(object sender, EventArgs e)
         {
-            if(txtPassword.Text == "5371")
+            if(txtPassword.Text == "ha$h")
             {
                 DialogResult = DialogResult.OK;
+                Arduino.Write("5");
             }
             else
             {

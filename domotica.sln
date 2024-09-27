@@ -5,6 +5,11 @@ VisualStudioVersion = 17.11.35303.130
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "domotica", "domotica.csproj", "{0FC60FF4-3DD1-491D-A1CC-9AB5E929EE53}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementos de la solución", "Elementos de la solución", "{870B35BF-6104-45FD-A9E3-A6D11068AEF0}"
+	ProjectSection(SolutionItems) = preProject
+		Parcial2.txt = Parcial2.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

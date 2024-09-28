@@ -2,15 +2,18 @@
 #include <Wire.h>
 #include <Stepper.h>
 //SERVO PIN10
-//LED PIN8
+//LED PIN7
 //BUZZER PIN9
 //SENSOR PIR2 (OUT)
 #include <Servo.h>
 // servomotor
 Servo servoMotor;
-int LED = 7;
+int LED = 6;
 int PIR = 3;
+// Buzzer
 int BUZZER = 13;
+//Fotoresistencia
+int LDR = A0;
 
 // --- motor stepper
 #define IN1 8
@@ -27,6 +30,10 @@ int pasosPara90Grados = pasosPorVuelta / 4;
 //pines que utilizamos en arduino del stepper
 Stepper myStepper(pasosPorVuelta, 8, 10, 9, 11);
 
+// sensor y bomba
+const int bombaAgua = 12;
+const int sensorAgua = A1;
+const int limiteNivelAgua = 300;
 // ---- DS3231
 //Direccionamiento del hardware
 DS3231 Clock;
@@ -34,31 +41,52 @@ RTClib RTC;
 int year, month, day, hour, minute, second;
 bool funcionEjecutada = false;
 // función de utilidad DS3231
-void establecerFechaYHora() {
-  DateTime now = RTC.now();
-  //se obtiene la fecha y hora
-  year = now.year();
-  month = now.month();
-  day = now.day();
-  hour = now.hour();
-  minute = now.minute();
-  second = now.second();
-  // Se imprime en el puerto serial
-  // Se imprime la fecha en el puerto serial
-  Serial.print("Fecha: ");
-  Serial.print(day);
-  Serial.print("/");
-  Serial.print(month);
-  Serial.print("/");
-  Serial.println(year);
+// boolenano para la alarma
+bool alarmaActiva = false;
 
-  // Se imprime la hora en el puerto serial
-  Serial.print("Hora: ");
-  Serial.print(hour);
-  Serial.print(":");
-  Serial.print(minute);
-  Serial.print(":");
-  Serial.println(second);
+//Función de utilidad para items de la alarma (PIR-BUZZER,LDR-LED Y LLENADO DE DEPOSITO DE AGUA)
+void activarItemsDeLaAlarma() {
+  bool lecturaPIR;
+  //fotoresistencia
+  int lecturaLDR;
+  const int limiteLuz = 200;
+  //bomba de agua
+  int nivelDelAguaDetectado;
+
+  //bomba de agua
+  nivelDelAguaDetectado = analogRead(sensorAgua);
+
+  /* Serial.print("Nivel del agua: ");
+  Serial.println(nivelDelAguaDetectado);
+  // delay(50);
+  // limitenivel = 300
+  if(nivelDelAguaDetectado > limiteNivelAgua) {
+    digitalWrite(bombaAgua, HIGH);
+  } else {
+    digitalWrite(bombaAgua, LOW);
+  } */
+
+  // PIR
+  lecturaPIR = digitalRead(PIR);
+  //encender buzzer
+  if(lecturaPIR == true) {
+    tone(BUZZER,330);
+  } else if(lecturaPIR == false) {
+    noTone(BUZZER);
+  }
+  Serial.println(lecturaPIR);
+  delay(500);
+
+  // fotoresistencia
+  lecturaLDR = analogRead(LDR);
+  Serial.println(lecturaLDR);
+  //encender led si fotoresistencia detecta oscuridad
+  if(lecturaLDR <= limiteLuz) {
+    digitalWrite(LED,HIGH);
+    delay(500);
+  } else if(lecturaLDR >= limiteLuz){
+    digitalWrite(LED, LOW);
+  }
 }
 
 void setup() {
@@ -66,16 +94,26 @@ void setup() {
   // DS3231
   Wire.begin();
   Serial.begin(9600);
-  //servomotor en el pin 12
-  servoMotor.attach(12);
+  //servomotor en el pin 7
+  servoMotor.attach(7);
   //inicia en la posición 0
   servoMotor.write(0);
 
   // motor stepper
   myStepper.setSpeed(motSpeed);
   // pinMode(LED,OUTPUT);
-  // pinMode(PIR, INPUT);
-  establecerFechaYHora();
+  // verFechaYHoraDS();
+
+  // LED 
+  pinMode(LED, OUTPUT);
+  // Buzzer
+  noTone(BUZZER);  
+
+  //PIR
+  pinMode(PIR, INPUT);
+
+  // bomba de agua
+//  pinMode(bombaAgua, OUTPUT);
 }
 
 void loop() {
@@ -83,143 +121,52 @@ void loop() {
   /*  int lecturaPIR = digitalRead(PIR);
   Serial.print("valor PIR: ");
   Serial.println(lecturaPIR); */
+
   char lecturaSerial = Serial.read();
+  
+  if(alarmaActiva == true) {
+    activarItemsDeLaAlarma();
+  } else {
+     // reiniciar valores de los items cuando la alarma se apague
+    noTone(BUZZER);1
+    digitalWrite(LED,LOW);
+  }
+  // Manda la lectura serial desde winforms '5' contraseña aprobada
+  if(lecturaSerial == '5') {
+    // activar / desactivar alarma
+    alarmaActiva = !alarmaActiva;
+  }
+
+  // falta detectar si la alarma ya fue introducida una vez, algo como una lógica de switch
 
   // Abrir y cerrar puerta (servomotor)
-
   if (lecturaSerial == '1') {
     servoMotor.write(180);
   }
 
   if (lecturaSerial == '2') {
     servoMotor.write(0);
+    // digitalWrite(LED,HIGH);
+    delay(50);
   }
 
   // Abrir y cerrar ventana (motor stepper)
-
   // motor stepper
   if (lecturaSerial == '3') {
     myStepper.step(pasosPara90Grados);
     // delay(500);
   }
+
   if (lecturaSerial == '4') {
     myStepper.step(-pasosPara90Grados);
     // delay(500);
   }
 
-  // --- DS3231
-  // se llama la función que permite obtener la fecha y la hora
-  if (funcionEjecutada == true) {
-    establecerFechaYHora();
-    funcionEjecutada = true;
-  }
+  //Activar / desactivar alarma
+  // nota: activa PIR con buzzer, fotoresistencia con LED y bomba de agua.
+  
 
+  // DS3231 Apagar y encender luces
+  // programar hora de encendido de luces
+  
 }
-
-/*
-    //Función para ver la fecha y hora del DS3231
-void verFechaYHoraDS() {
-  DateTime now = RTC.now();
-  //se obtiene la fecha y hora
-  year = now.year();
-  month = now.month();
-  day = now.day();
-  hour = now.hour();
-  minute = now.minute();
-  second = now.second();
-  // Se imprime en el puerto serial
-  // Se imprime la fecha en el puerto serial
-  Serial.print("Fecha: ");
-  Serial.print(day);
-  Serial.print("/");
-  Serial.print(month);
-  Serial.print("/");
-  Serial.println(year);
-
-  // Se imprime la hora en el puerto serial
-  Serial.print("Hora: ");
-  Serial.print(hour);
-  Serial.print(":");
-  Serial.print(minute);
-  Serial.print(":");
-  Serial.println(second);
-}
-
-String establecerFechaYHora(String hora, String minuto, String segundo) {
-  DateTime now = RTC.now();
-  //se obtiene la fecha y hora
-  year = now.year();
-  month = now.month();
-  day = now.day();
-  hour = hora || now.hour();
-  minute = minuto || now.minute();
-  second = segundo || now.second();
-  // Se imprime en el puerto serial
-  // Se imprime la fecha en el puerto serial
-  Serial.print("Fecha: ");
-  Serial.print(day);
-  Serial.print("/");
-  Serial.print(month);
-  Serial.print("/");
-  Serial.println(year);
-
-  // Se imprime la hora en el puerto serial
-  Serial.print("Hora: ");
-  Serial.print(hour);
-  Serial.print(":");
-  Serial.print(minute);
-  Serial.print(":");
-  Serial.println(second);
-  
-  return "Hora establecida: " + String(hora) + ":" + String(minuto) + ":" + String(segundo);
-}
-
-void establecerNuevaFechaYHora(int hora, int minuto, int segundo) {
-  DateTime now = RTC.now();
-  //se obtiene la fecha y hora actual
-  year = now.year();
-  month = now.month();
-  day = now.day();
-  
-  // Crear un nuevo objeto DateTime con la fecha y hora deseada
-  DateTime newTime(year, month, day, hora, minuto, segundo);
-  
-  // Establecer la nueva fecha y hora en el DS3231
-  RTC.adjust(newTime);
-  
-  // Se imprime en el puerto serial la nueva fecha y hora
-  Serial.print("Fecha: ");
-  Serial.print(day);
-  Serial.print("/");
-  Serial.print(month);
-  Serial.print("/");
-  Serial.println(year);
-
-  Serial.print("Hora: ");
-  Serial.print(hora);
-  Serial.print(":");
-  Serial.print(minuto);
-  Serial.print(":");
-  Serial.println(segundo);
-  
-
-
-  if(lecturaSerial == '6') {
-    if(String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second()) >= pruebaFuncionHora) {
-      Serial.println("positivo");
-      Serial.println("hora establecida prueba: ");
-      Serial.print(pruebaFuncionHora);
-      Serial.println("Original DS3231: ");
-      Serial.println(String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second()));
-
-      digitalWrite(LED,HIGH);
-      
-      // Serial.println(String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second()));
-    } else {
-      Serial.println("hora no cuadra");
-      // Serial.println(String(now.hour()) + ":" + String(now.minute()) + ":" + String(now.second()));
-      
-    }
-  }
-
-*/
